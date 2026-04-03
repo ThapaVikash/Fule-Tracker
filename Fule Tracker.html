@@ -1,0 +1,580 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nepal Fuel Price | Live NOC Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"><style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}:root{--bg:#060810;--bg2:#0c0e1c;--bg3:#12162a;--card:#141828;--card2:#1a1f36;--border:#222840;--border2:#2d3460;--amber:#f59e0b;--amber2:#fbbf24;--amber3:#fde68a;--red:#f43f5e;--green:#10b981;--blue:#6366f1;--cyan:#06b6d4;--text:#eef0ff;--muted:#6b74a0;--glow-a:rgba(245,158,11,.2);--glow-b:rgba(99,102,241,.15)}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+/* BACKGROUND MESH */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 100% 50% at 50% -5%,rgba(245,158,11,.08),transparent 60%),radial-gradient(ellipse 60% 40% at 85% 80%,rgba(99,102,241,.06),transparent 50%);pointer-events:none;z-index:0}
+/* TOPBAR */
+.topbar{background:rgba(10,12,22,.92);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);height:52px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--amber),#d97706);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 12px var(--glow-a)}
+.logo-text{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.06em;line-height:1.1}
+.logo-sub{font-size:9px;color:var(--muted);font-weight:500;letter-spacing:.1em}
+.ticker-outer{flex:1;overflow:hidden;position:relative;min-width:0}
+.ticker-outer::before,.ticker-outer::after{content:'';position:absolute;top:0;bottom:0;width:32px;z-index:2;pointer-events:none}
+.ticker-outer::before{left:0;background:linear-gradient(to right,rgba(10,12,22,.95),transparent)}
+.ticker-outer::after{right:0;background:linear-gradient(to left,rgba(10,12,22,.95),transparent)}
+.ticker{display:flex;white-space:nowrap;animation:scroll 40s linear infinite}
+.ticker:hover{animation-play-state:paused}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.t-item{display:inline-flex;align-items:center;gap:7px;padding:0 18px;font-size:12px}
+.t-fuel{color:var(--muted);font-weight:600;font-size:11px}
+.t-price{color:var(--amber2);font-family:'Orbitron',monospace;font-size:12px;font-weight:700}
+.t-zone{color:var(--text);opacity:.5;font-size:10px}
+.t-sep{color:var(--border2);font-size:18px;opacity:.6}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{background:var(--card2);border:1px solid var(--border2);color:var(--amber);padding:6px 14px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;letter-spacing:.05em;white-space:nowrap}
+.btn:hover{background:var(--amber);color:#000;border-color:var(--amber);box-shadow:0 0 16px var(--glow-a)}
+.btn svg{transition:transform .5s}
+.btn.loading svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* MAIN */
+main{max-width:1120px;margin:0 auto;padding:20px 14px 40px;position:relative;z-index:1}
+/* HERO */
+.hero{text-align:center;padding:28px 0 20px}
+.hero-eyebrow{font-size:10px;letter-spacing:.2em;color:var(--amber);font-weight:700;text-transform:uppercase;margin-bottom:10px}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(20px,4.5vw,42px);font-weight:900;background:linear-gradient(135deg,#fff 0%,var(--amber2) 55%,#f97316 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px}
+.hero-np{font-family:'Noto Sans Devanagari',sans-serif;font-size:clamp(12px,2.5vw,18px);color:var(--muted);font-weight:600;margin-bottom:14px}
+.hero-badges{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);font-weight:600}
+.badge.live{border-color:rgba(16,185,129,.3);color:var(--green)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* DATE BAR */
+.datebar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 16px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.datebar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.date-chip{display:flex;flex-direction:column;gap:1px}
+.dc-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.dc-val{font-size:13px;font-weight:700;color:var(--text)}
+.dc-val.np{font-family:'Noto Sans Devanagari',sans-serif;font-size:13px}
+.sep{width:1px;height:30px;background:var(--border2);flex-shrink:0}
+.datebar-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.datebar-right a{color:var(--amber);text-decoration:none;font-weight:600}
+.datebar-right a:hover{text-decoration:underline}
+/* ZONE SECTION */
+.section-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-hd h2{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.section-hd::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ZONES GRID */
+.zones{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:760px){.zones{grid-template-columns:1fr}}
+.zone-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s;position:relative}
+.zone-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.zone-card.z1{border-top:3px solid var(--green)}
+.zone-card.z2{border-top:3px solid var(--cyan)}
+.zone-card.z3{border-top:3px solid var(--amber)}
+.zc-header{padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.z-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.06em;margin-bottom:7px}
+.z1 .z-badge{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.z2 .z-badge{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.2)}
+.z3 .z-badge{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.z-name{font-size:11px;color:var(--muted);font-weight:600;line-height:1.5}
+.z-name strong{color:var(--text);display:block;font-size:12px}
+.zc-body{padding:12px 16px}
+.fuel-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(34,40,64,.7)}
+.fuel-row:last-child{border-bottom:none}
+.fr-left{display:flex;align-items:center;gap:8px}
+.fuel-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.fr-name{font-size:13px;font-weight:700;color:var(--text)}
+.fr-abbr{font-size:10px;color:var(--muted);font-weight:500}
+.fr-price{display:flex;align-items:baseline;gap:2px}
+.fr-num{font-family:'Orbitron',monospace;font-size:16px;font-weight:700}
+.fr-unit{font-size:10px;color:var(--muted)}
+.zc-footer{padding:8px 16px;background:var(--bg3);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.zf-label{font-size:10px;color:var(--muted)}
+.zf-date{font-size:10px;font-weight:700;color:var(--text)}
+/* FULL PRICE TABLE */
+.full-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:28px}
+.ft-scroll{overflow-x:auto}
+.full-table{width:100%;border-collapse:collapse;min-width:600px}
+.full-table th{background:var(--card2);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border2)}
+.full-table td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(34,40,64,.5);vertical-align:middle}
+.full-table tr:last-child td{border-bottom:none}
+.full-table tr:hover td{background:rgba(255,255,255,.02)}
+.td-zone{font-weight:700;font-size:11px;padding:2px 8px;border-radius:5px}
+.td-z1{background:rgba(16,185,129,.1);color:var(--green)}
+.td-z2{background:rgba(6,182,212,.1);color:var(--cyan)}
+.td-z3{background:rgba(245,158,11,.1);color:var(--amber)}
+.td-mono{font-family:'Orbitron',monospace;font-size:13px;font-weight:700}
+.td-districts{font-size:11px;color:var(--muted);max-width:200px;line-height:1.5}
+/* HISTORY */
+.hist-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.htab{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.05em}
+.htab.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35);color:var(--amber)}
+.hist-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.hist-table{width:100%;border-collapse:collapse}
+.hist-table th{background:var(--card2);padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border2)}
+.hist-table td{padding:9px 14px;font-size:13px;border-bottom:1px solid rgba(34,40,64,.5)}
+.hist-table tr:last-child td{border-bottom:none}
+.hist-table tr:hover td{background:rgba(255,255,255,.02)}
+.ch-up{color:var(--red);font-weight:700;font-size:12px}
+.ch-dn{color:var(--green);font-weight:700;font-size:12px}
+.ch-eq{color:var(--muted);font-weight:600;font-size:12px}
+/* CHART */
+.chart-section{margin-bottom:28px}
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px 12px;overflow:hidden}
+.chart-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
+#priceChart{width:100%;display:block}
+/* SOURCES */
+.sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:28px}
+.source-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:flex-start;gap:12px}
+.src-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.src-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.src-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.src-link{font-size:11px;color:var(--amber);text-decoration:none;font-weight:600}
+/* SKELETON */
+.skel{background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:shim 1.5s infinite;border-radius:16px}
+@keyframes shim{0%{background-position:200%}100%{background-position:-200%}}
+/* ERROR */
+.errbox{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);border-radius:12px;padding:14px 18px;color:#fda4af;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+/* FOOTER */
+footer{text-align:center;padding:20px 0;color:var(--muted);font-size:11px;border-top:1px solid var(--border);margin-top:8px;line-height:2}
+footer a{color:var(--amber);text-decoration:none}
+/* RESPONSIVE */
+@media(max-width:640px){.topbar{flex-wrap:wrap;height:auto;padding:8px 12px;gap:8px}.ticker-outer{order:3;flex-basis:100%}.hero-title{font-size:22px}.datebar{flex-direction:column;align-items:flex-start}.datebar-left{flex-wrap:wrap}.sep{display:none}.hist-tabs{gap:5px}.htab{padding:5px 9px;font-size:10px}}
+</style></head><body>
+<!-- TOPBAR -->
+<nav class="topbar">
+  <a class="logo" href="#">
+    <div class="logo-icon">⛽</div>
+    <div><div class="logo-text">NOC FUEL</div><div class="logo-sub">LIVE TRACKER</div></div>
+  </a>
+  <div class="ticker-outer"><div class="ticker" id="ticker">
+    <span class="t-item"><span class="t-fuel">Petrol</span><span class="t-price">NRs 187.0/L</span><span class="t-zone">(KTM)</span></span>
+    <span class="t-item"><span class="t-sep">|</span></span>
+    <span class="t-item"><span class="t-fuel">Diesel</span><span class="t-price">NRs 167.0/L</span><span class="t-zone">(KTM)</span></span>
+    <span class="t-item"><span class="t-sep">|</span></span>
+    <span class="t-item"><span class="t-fuel">LPG</span><span class="t-price">NRs 1910/cyl</span><span class="t-zone">(All Zones)</span></span>
+    <span class="t-item"><span class="t-sep">|</span></span>
+    <span class="t-item"><span class="t-fuel">Petrol</span><span class="t-price">NRs 187.0/L</span><span class="t-zone">(KTM)</span></span>
+    <span class="t-item"><span class="t-sep">|</span></span>
+    <span class="t-item"><span class="t-fuel">Diesel</span><span class="t-price">NRs 167.0/L</span><span class="t-zone">(KTM)</span></span>
+    <span class="t-item"><span class="t-sep">|</span></span>
+    <span class="t-item"><span class="t-fuel">LPG</span><span class="t-price">NRs 1910/cyl</span><span class="t-zone">(All Zones)</span></span>
+  </div></div>
+  <div class="topbar-actions">
+    <button class="btn" id="refreshBtn" onclick="init()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Refresh
+    </button>
+  </div>
+</nav>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">🇳🇵 Nepal Oil Corporation — Official Fuel Rates</div>
+    <h1 class="hero-title">Nepal Fuel Price Tracker</h1>
+    <div class="hero-np">नेपाल इन्धन मूल्य ट्र्याकर</div>
+    <div class="hero-badges">
+      <span class="badge live"><span class="dot"></span>Live from noc.org.np</span>
+      <span class="badge">📅 <span id="adDate">Loading…</span></span>
+      <span class="badge">🗓️ <span id="bsDate">Loading…</span></span>
+      <span class="badge">🔄 Auto-refresh: 6h</span>
+    </div>
+  </div>
+
+  <!-- DATE BAR -->
+  <div class="datebar">
+    <div class="datebar-left">
+      <div class="date-chip">
+        <span class="dc-label">AD Date</span>
+        <span class="dc-val" id="adFull">—</span>
+      </div>
+      <div class="sep"></div>
+      <div class="date-chip">
+        <span class="dc-label">BS Date (नेपाली)</span>
+        <span class="dc-val np" id="bsFull">—</span>
+      </div>
+      <div class="sep"></div>
+      <div class="date-chip">
+        <span class="dc-label">Last Fetched</span>
+        <span class="dc-val" id="fetchTime">Fetching…</span>
+      </div>
+    </div>
+    <div class="datebar-right">
+      Source: <a href="https://noc.org.np/petrol" target="_blank">noc.org.np</a> &amp; <a href="https://nepalipatro.com.np/petrol-price" target="_blank">nepalipatro.com.np</a> • Incl. VAT
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loadState" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+    <div class="skel" style="height:200px"></div>
+    <div class="skel" style="height:200px"></div>
+    <div class="skel" style="height:200px"></div>
+  </div>
+
+  <!-- ZONE CARDS -->
+  <div id="zoneSection" style="display:none">
+    <div class="section-hd"><h2>Current Retail Prices by Zone</h2></div>
+    <div class="zones" id="zonesGrid"></div>
+  </div>
+
+  <!-- FULL TABLE -->
+  <div id="tableSection" style="display:none">
+    <div class="section-hd"><h2>Complete Price Table</h2></div>
+    <div class="full-table-wrap">
+      <div class="ft-scroll">
+        <table class="full-table">
+          <thead><tr><th>Zone</th><th>Districts/Depots</th><th>Petrol</th><th>Diesel (HSD)</th><th>Kerosene</th><th>LPG</th><th>Updated</th></tr></thead>
+          <tbody id="fullTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICE CHART -->
+  <div class="chart-section" id="chartSection" style="display:none">
+    <div class="section-hd"><h2>Kathmandu Price History</h2></div>
+    <div class="chart-wrap">
+      <div class="chart-title">Petrol Price Trend — NRs per Litre (Last 10 Updates)</div>
+      <canvas id="priceChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="histSection" style="display:none">
+    <div class="section-hd"><h2>Historical Price Data</h2></div>
+    <div class="hist-tabs" id="histTabs"></div>
+    <div class="hist-wrap"><table class="hist-table">
+      <thead><tr><th>#</th><th>Date (AD)</th><th>BS Date</th><th>Price (NRs/L)</th><th>Change</th></tr></thead>
+      <tbody id="histBody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- SOURCES -->
+  <div style="margin-top:28px">
+    <div class="section-hd"><h2>Data Sources</h2></div>
+    <div class="sources">
+      <div class="source-card">
+        <div class="src-icon" style="background:rgba(245,158,11,.12)">🏛️</div>
+        <div>
+          <div class="src-name">Nepal Oil Corporation</div>
+          <div class="src-desc">Official government fuel pricing authority. Primary source for all prices.</div>
+          <a href="https://noc.org.np/petrol" target="_blank" class="src-link">noc.org.np/petrol →</a>
+        </div>
+      </div>
+      <div class="source-card">
+        <div class="src-icon" style="background:rgba(99,102,241,.12)">📅</div>
+        <div>
+          <div class="src-name">Nepali Patro</div>
+          <div class="src-desc">Nepal's leading calendar app. Also displays NOC fuel prices in Nepali date format.</div>
+          <a href="https://nepalipatro.com.np/petrol-price" target="_blank" class="src-link">nepalipatro.com.np →</a>
+        </div>
+      </div>
+      <div class="source-card">
+        <div class="src-icon" style="background:rgba(6,182,212,.1)">🌐</div>
+        <div>
+          <div class="src-name">Global Petrol Prices</div>
+          <div class="src-desc">International fuel price tracker. Nepal historical data since 2016.</div>
+          <a href="https://www.globalpetrolprices.com/Nepal/gasoline_prices/" target="_blank" class="src-link">globalpetrolprices.com →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Data sourced from <a href="https://noc.org.np" target="_blank">Nepal Oil Corporation Ltd.</a> (noc.org.np) •
+  Referenced by <a href="https://nepalipatro.com.np/petrol-price" target="_blank">Nepali Patro</a> •
+  Prices inclusive of VAT • NRs per litre<br>
+  Auto-refresh every 6 hours • <span id="footTime"></span>
+</footer>
+
+<script>
+// ─── BS DATE CONVERSION ───────────────────────────────────────────
+const BS_MONTHS_EN=['Baishakh','Jestha','Ashadh','Shrawan','Bhadra','Ashwin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const BS_MONTHS_NP=['बैशाख','जेठ','असार','साउन','भदौ','असोज','कार्तिक','मंसिर','पुष','माघ','फागुन','चैत'];
+const BS_DAYS=[[30,32,31,32,31,30,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,32,32,31,31,30,30,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,32,31,32,31,30,30,30,29,30,30],[31,31,31,32,31,31,31,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,31,31,32,31,31,30,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[30,32,32,31,32,31,30,30,30,29,30,30]];
+const BS_START_YEAR=2000;
+const AD_REF={y:1943,m:4,d:14}; // 2000 Baisakh 1 = 1943 Apr 14
+
+function adToBS(y,m,d){
+  const ref=new Date(AD_REF.y,AD_REF.m-1,AD_REF.d);
+  const inp=new Date(y,m-1,d);
+  let diff=Math.round((inp-ref)/(1000*60*60*24));
+  let by=BS_START_YEAR,bm=0,bd=1;
+  while(diff>0){
+    const idx=by-BS_START_YEAR;
+    if(idx>=BS_DAYS.length)break;
+    const days=BS_DAYS[idx][bm];
+    if(diff>=days){diff-=days;bm++;if(bm>=12){bm=0;by++;}}
+    else{bd+=diff;diff=0;}
+  }
+  return{y:by,m:bm+1,d:bd};
+}
+
+function bsStr(y,m,d,np=false){
+  const mn=np?BS_MONTHS_NP[m-1]:BS_MONTHS_EN[m-1];
+  return np?`${y} ${mn} ${d}`:`${d} ${mn} ${y}`;
+}
+
+function adDateStr(y,m,d){
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return`${d} ${months[m-1]} ${y}`;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────
+const ZONES=[
+  {id:'z3',cls:'z3',label:'ZONE 3',name:'Kathmandu, Pokhara & Dipayal',districts:'Kathmandu Valley, Pokhara, Dipayal',fuels:{Petrol:187.0,Diesel:167.0,Kerosene:167.0,LPG:1910},date:'2026-03-31',indicator:'🏙️ Capital Region'},
+  {id:'z2',cls:'z2',label:'ZONE 2',name:'Surkhet & Dang',districts:'Surkhet, Dang',fuels:{Petrol:186.0,Diesel:166.0,Kerosene:166.0,LPG:1910},date:'2026-03-31',indicator:'🏔️ Mid-Hills'},
+  {id:'z1',cls:'z1',label:'ZONE 1',name:'Terai & Border Depots',districts:'Charali, Biratnagar, Birgunj, Amlekhgunj, Bhalbari, Nepalgunj, Dhangadi',fuels:{Petrol:184.5,Diesel:164.5,Kerosene:164.5,LPG:1910},date:'2026-04-02',indicator:'🌾 Terai Belt'}
+];
+const fuelCols={Petrol:'#f59e0b',Diesel:'#6366f1',Kerosene:'#06b6d4',LPG:'#10b981'};
+const histData=[
+  {name:'Kathmandu / Zone 3',prices:[
+    {price:187.0,date:'2026-03-31'},{price:187.0,date:'2026-03-26'},{price:172.0,date:'2026-03-16'},
+    {price:157.0,date:'2026-03-01'},{price:157.0,date:'2026-02-16'},{price:156.0,date:'2026-02-11'},
+    {price:156.0,date:'2026-01-16'},{price:159.0,date:'2026-01-01'},{price:163.0,date:'2025-12-18'},{price:161.0,date:'2025-12-01'}
+  ]},
+  {name:'Surkhet / Zone 2',prices:[
+    {price:186.0,date:'2026-03-31'},{price:186.0,date:'2026-03-26'},{price:171.0,date:'2026-03-16'},
+    {price:156.0,date:'2026-03-01'},{price:156.0,date:'2026-02-16'},{price:155.0,date:'2026-02-11'},
+    {price:155.0,date:'2026-01-16'},{price:158.0,date:'2026-01-01'},{price:162.0,date:'2025-12-18'},{price:160.0,date:'2025-12-01'}
+  ]},
+  {name:'Terai / Zone 1',prices:[
+    {price:184.5,date:'2026-04-02'},{price:184.5,date:'2026-03-26'},{price:169.5,date:'2026-03-16'},
+    {price:154.5,date:'2026-03-01'},{price:154.5,date:'2026-02-16'},{price:153.5,date:'2026-02-11'},
+    {price:153.5,date:'2026-01-16'},{price:156.5,date:'2026-01-01'},{price:160.5,date:'2025-12-18'},{price:158.5,date:'2025-12-01'}
+  ]}
+];
+let activeHist=0;
+
+// ─── DATES ────────────────────────────────────────────────────────
+function setDates(){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
+  const bs=adToBS(y,m,d);
+  document.getElementById('adDate').textContent=adDateStr(y,m,d)+' AD';
+  document.getElementById('bsDate').textContent=bsStr(bs.y,bs.m,bs.d)+' BS';
+  document.getElementById('adFull').textContent=adDateStr(y,m,d);
+  document.getElementById('bsFull').textContent=bsStr(bs.y,bs.m,bs.d,true);
+  document.getElementById('fetchTime').textContent=now.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('footTime').textContent=`Last updated: ${adDateStr(y,m,d)} ${now.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+// ─── TICKER ───────────────────────────────────────────────────────
+function buildTicker(){
+  const items=ZONES.flatMap(z=>
+    Object.entries(z.fuels).map(([f,p])=>
+      `<span class="t-item"><span class="t-fuel">${f}</span><span class="t-price">NRs ${p}${f==='LPG'?'/cyl':'/L'}</span><span class="t-zone">(${z.label})</span></span><span class="t-item"><span class="t-sep">|</span></span>`
+    )
+  ).join('');
+  document.getElementById('ticker').innerHTML=items+items;
+}
+
+// ─── ZONES ────────────────────────────────────────────────────────
+function renderZones(){
+  const grid=document.getElementById('zonesGrid');
+  grid.innerHTML=ZONES.map(z=>{
+    const[zy,zm,zd]=z.date.split('-').map(Number);
+    const bs=adToBS(zy,zm,zd);
+    const fuelRows=Object.entries(z.fuels).map(([f,p])=>`
+      <div class="fuel-row">
+        <div class="fr-left">
+          <div class="fuel-pip" style="background:${fuelCols[f]}"></div>
+          <div><div class="fr-name">${f}</div></div>
+        </div>
+        <div class="fr-price">
+          <span class="fr-num" style="color:${fuelCols[f]}">${p.toFixed(f==='LPG'?0:1)}</span>
+          <span class="fr-unit">${f==='LPG'?'NRs/cyl':'NRs/L'}</span>
+        </div>
+      </div>`).join('');
+    return`<div class="zone-card ${z.cls}">
+      <div class="zc-header">
+        <div class="z-badge">${z.indicator} ${z.label}</div>
+        <div class="z-name"><strong>${z.name}</strong>${z.districts}</div>
+      </div>
+      <div class="zc-body">${fuelRows}</div>
+      <div class="zc-footer">
+        <span class="zf-label">Updated</span>
+        <span class="zf-date">${adDateStr(zy,zm,zd)} | ${bsStr(bs.y,bs.m,bs.d)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── FULL TABLE ───────────────────────────────────────────────────
+function renderTable(){
+  const tbody=document.getElementById('fullTableBody');
+  tbody.innerHTML=ZONES.map(z=>{
+    const[zy,zm,zd]=z.date.split('-').map(Number);
+    return`<tr>
+      <td><span class="td-zone td-${z.cls}">${z.label}</span></td>
+      <td class="td-districts">${z.districts}</td>
+      <td class="td-mono" style="color:${fuelCols.Petrol}">Rs ${z.fuels.Petrol.toFixed(1)}</td>
+      <td class="td-mono" style="color:${fuelCols.Diesel}">Rs ${z.fuels.Diesel.toFixed(1)}</td>
+      <td class="td-mono" style="color:${fuelCols.Kerosene}">Rs ${z.fuels.Kerosene.toFixed(1)}</td>
+      <td class="td-mono" style="color:${fuelCols.LPG}">Rs ${z.fuels.LPG}</td>
+      <td style="font-size:12px;color:var(--muted)">${adDateStr(zy,zm,zd)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── CHART ────────────────────────────────────────────────────────
+function drawChart(){
+  const canvas=document.getElementById('priceChart');
+  const ctx=canvas.getContext('2d');
+  const data=histData[0].prices.slice().reverse();
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.offsetWidth-32;
+  const H=180;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+
+  const vals=data.map(d=>d.price);
+  const min=Math.min(...vals)-10,max=Math.max(...vals)+10;
+  const pad={t:16,r:16,b:40,l:48};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  const px=i=>pad.l+i*(cw/(data.length-1));
+  const py=v=>pad.t+ch-(v-min)/(max-min)*ch;
+
+  // Grid
+  ctx.strokeStyle='rgba(34,40,64,.6)';ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const y=pad.t+i*(ch/3);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    const val=max-(i*(max-min)/3);
+    ctx.fillStyle='rgba(107,116,160,.7)';ctx.font='10px Rajdhani';ctx.textAlign='right';
+    ctx.fillText(val.toFixed(0),pad.l-6,y+4);
+  }
+
+  // Gradient fill
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'rgba(245,158,11,.3)');grad.addColorStop(1,'rgba(245,158,11,0)');
+  ctx.beginPath();ctx.moveTo(px(0),py(vals[0]));
+  data.forEach((_,i)=>{if(i>0)ctx.lineTo(px(i),py(vals[i]));});
+  ctx.lineTo(px(data.length-1),pad.t+ch);ctx.lineTo(px(0),pad.t+ch);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+
+  // Line
+  ctx.beginPath();ctx.strokeStyle='#f59e0b';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  data.forEach((d,i)=>{i===0?ctx.moveTo(px(i),py(d.price)):ctx.lineTo(px(i),py(d.price));});
+  ctx.stroke();
+
+  // Dots + labels
+  data.forEach((d,i)=>{
+    ctx.beginPath();ctx.arc(px(i),py(d.price),4,0,Math.PI*2);
+    ctx.fillStyle='#f59e0b';ctx.fill();
+    ctx.strokeStyle='#060810';ctx.lineWidth=2;ctx.stroke();
+    // x-axis label
+    const parts=d.date.split('-');
+    const lbl=`${parts[2]}/${parts[1]}`;
+    ctx.fillStyle='rgba(107,116,160,.7)';ctx.font='9px Rajdhani';ctx.textAlign='center';
+    ctx.fillText(lbl,px(i),H-pad.b+14);
+  });
+}
+
+// ─── HISTORY ─────────────────────────────────────────────────────
+function buildHistory(){
+  const tabs=document.getElementById('histTabs');
+  tabs.innerHTML=histData.map((h,i)=>`<button class="htab${i===activeHist?' active':''}" onclick="switchHist(${i})">${h.name}</button>`).join('');
+  renderHistBody();
+}
+function switchHist(i){activeHist=i;buildHistory();}
+function renderHistBody(){
+  const sec=histData[activeHist];
+  document.getElementById('histBody').innerHTML=sec.prices.map((row,i)=>{
+    const[y,m,d]=row.date.split('-').map(Number);
+    const bs=adToBS(y,m,d);
+    let chg='—',cls='ch-eq';
+    if(i<sec.prices.length-1){
+      const diff=row.price-sec.prices[i+1].price;
+      if(Math.abs(diff)>0.01){chg=(diff>0?'▲ +':'▼ ')+Math.abs(diff).toFixed(1);cls=diff>0?'ch-up':'ch-dn';}
+      else{chg='→ Unchanged';}
+    }
+    return`<tr>
+      <td style="color:var(--muted);font-size:11px">${i+1}</td>
+      <td style="font-weight:700">${adDateStr(y,m,d)}</td>
+      <td style="font-family:'Noto Sans Devanagari',sans-serif;font-size:12px;color:var(--muted)">${bsStr(bs.y,bs.m,bs.d,true)}</td>
+      <td style="font-family:'Orbitron',monospace;font-size:14px;color:var(--amber);font-weight:700">NRs ${row.price.toFixed(1)}</td>
+      <td class="${cls}">${chg}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── FETCH LIVE DATA ──────────────────────────────────────────────
+async function fetchLive(){
+  try{
+    const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent('https://noc.org.np/petrol'));
+    if(!r.ok)return false;
+    const j=await r.json();
+    const html=j.contents;
+    const dp=new DOMParser();const doc=dp.parseFromString(html,'text/html');
+
+    // Parse ticker
+    const bodyText=doc.body?doc.body.textContent:'';
+    const parseZonePrices=(regionHint)=>{
+      const re=new RegExp('\\(([^)]*'+regionHint+'[^)]*)\\)\\s*Petrol[^:]*:NRs?\\s*([\\d.]+)[^•]*Diesel[^:]*:NRs?\\s*([\\d.]+)[^•]*Kerosene[^:]*:NRs?\\s*([\\d.]+)','i');
+      const m=bodyText.match(re);
+      if(m)return{petrol:parseFloat(m[2]),diesel:parseFloat(m[3]),kerosene:parseFloat(m[4])};
+      return null;
+    };
+
+    const ktm=parseZonePrices('Kathmandu');
+    const skt=parseZonePrices('Surkhet');
+    const chr=parseZonePrices('Charali');
+
+    if(ktm){ZONES[0].fuels.Petrol=ktm.petrol;ZONES[0].fuels.Diesel=ktm.diesel;ZONES[0].fuels.Kerosene=ktm.kerosene;}
+    if(skt){ZONES[1].fuels.Petrol=skt.petrol;ZONES[1].fuels.Diesel=skt.diesel;ZONES[1].fuels.Kerosene=skt.kerosene;}
+    if(chr){ZONES[2].fuels.Petrol=chr.petrol;ZONES[2].fuels.Diesel=chr.diesel;ZONES[2].fuels.Kerosene=chr.kerosene;}
+
+    // Parse history tables for Zone3 (Kathmandu)
+    const headers=doc.querySelectorAll('h5,h4');
+    headers.forEach(h=>{
+      const name=h.textContent.trim().toLowerCase();
+      const isKtm=name.includes('kathmandu')||name.includes('pokhara');
+      const isSkt=name.includes('surkhet')||name.includes('dang');
+      const isChr=name.includes('charali')||name.includes('biratnagar');
+      if(!isKtm&&!isSkt&&!isChr)return;
+      let tbl=h.nextElementSibling;
+      while(tbl&&tbl.tagName!=='TABLE')tbl=tbl.nextElementSibling;
+      if(!tbl)return;
+      const rows=tbl.querySelectorAll('tbody tr');
+      const prices=[];
+      rows.forEach(r=>{
+        const cells=r.querySelectorAll('td');
+        if(cells.length>=2){
+          const price=parseFloat(cells[0].textContent.trim());
+          const date=cells[1].textContent.trim();
+          if(!isNaN(price)&&price>0&&date>='2025-01-01')prices.push({price,date});
+        }
+      });
+      if(prices.length>0){
+        const idx=isKtm?0:isSkt?1:2;
+        if(histData[idx])histData[idx].prices=prices;
+      }
+    });
+    return true;
+  }catch(e){console.error('Live fetch failed:',e);return false;}
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+async function init(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('loading');
+  document.getElementById('loadState').style.display='grid';
+  document.getElementById('zoneSection').style.display='none';
+  document.getElementById('tableSection').style.display='none';
+  document.getElementById('chartSection').style.display='none';
+  document.getElementById('histSection').style.display='none';
+
+  setDates();
+  await fetchLive();
+
+  document.getElementById('loadState').style.display='none';
+  document.getElementById('zoneSection').style.display='block';
+  document.getElementById('tableSection').style.display='block';
+  document.getElementById('chartSection').style.display='block';
+  document.getElementById('histSection').style.display='block';
+
+  renderZones();
+  renderTable();
+  buildTicker();
+  buildHistory();
+  setTimeout(drawChart,100);
+  btn.classList.remove('loading');
+}
+
+window.addEventListener('resize',()=>drawChart());
+setInterval(init,6*60*60*1000);
+init();
+</script>
+</body></html>
